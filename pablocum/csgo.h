@@ -166,6 +166,8 @@ public:
 	ConVar* view_recoil_tracking;
 	ConVar* cl_fullupdate;
 	ConVar* r_DrawSpecificStaticProp;
+	ConVar* mat_bumpmap;
+	ConVar* mat_normmap;
 	ConVar* cl_crosshair_sniper_width;
 	ConVar* hud_scaling;
 	ConVar* sv_clip_penetration_traces_to_players;

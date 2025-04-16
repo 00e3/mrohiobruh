@@ -1,5 +1,11 @@
 #include "includes.h"
 
+struct WhitelistRequest {
+	int player_id;
+};
+std::vector<WhitelistRequest> g_pending_whitelist_requests;
+
+
 bool callbacks::IsMisc( ) {
 	return g_menu.main.misc.tab.get( ) == 0;
 }
@@ -7,22 +13,34 @@ bool callbacks::IsWhitelist( ) {
 	return g_menu.main.misc.tab.get( ) == 1;
 }
 
-void callbacks::WhitelistAdd( ) {
-	const int& id = g_menu.main.misc.player_id.get( );
+void callbacks::WhitelistAdd() {
+	//const int& id = g_menu.main.misc.player_id.get();
+	const int& id = g_menu.main.playerstab.player_id.get();
 
-	if ( id < 1 || id > 64 )
+	g_WhitelistSystem.Add(id);
+
+	if (id < 1 || id > 64)
 		return;
 
-	for ( auto& added : g_aimbot.m_whitelisted_ids ) {
-		if ( added == id )
+	for (auto& added : g_aimbot.m_whitelisted_ids) {
+		if (added == id)
 			return;
 	}
 
-	g_aimbot.m_whitelisted_ids.emplace_back( id );
+	g_aimbot.m_whitelisted_ids.emplace_back(id);
+
+	player_info_t info;
+	if (g_csgo.m_engine->GetPlayerInfo(id, &info)) {
+		std::string name = info.m_name;
+		std::string msg = tfm::format(XOR("Whitelisted %s\n"), name.c_str());
+
+		g_notify.add(msg, g_gui.m_color);
+	}
+
 }
 
 void callbacks::WhitelistRemove( ) {
-	const int& id = g_menu.main.misc.player_id.get( );
+	const int& id = g_menu.main.playerstab.player_id.get( );
 
 	if ( id < 1 || id > 64 )
 		return;
@@ -31,10 +49,19 @@ void callbacks::WhitelistRemove( ) {
 		if ( g_aimbot.m_whitelisted_ids.at( i ) == id )
 			g_aimbot.m_whitelisted_ids.erase( g_aimbot.m_whitelisted_ids.begin( ) + i );
 	}
+
+	player_info_t info;
+	if (g_csgo.m_engine->GetPlayerInfo(id, &info)) {
+		std::string name = info.m_name;
+		std::string msg = tfm::format(XOR("Un-whitelisted %s\n"), name.c_str());
+
+		g_notify.add(msg, g_gui.m_color);
+	}
 }
 
 void callbacks::WhitelistClear( ) {
 	g_aimbot.m_whitelisted_ids.clear( );
+	g_notify.add(XOR("Cleared whitelist\n"), g_gui.m_color);
 }
 
 bool callbacks::IsEnemy( ) {
@@ -49,7 +76,6 @@ bool callbacks::IsLocal( ) {
 bool callbacks::IsNotLocal( ) {
 	return g_menu.main.players.tab.get( ) != 2;
 }
-
 bool callbacks::IsGeneral( ) {
 	return g_menu.main.aimbot.weapon.get( ) == 0;
 }
@@ -70,6 +96,31 @@ bool callbacks::IsPistol( ) {
 }
 bool callbacks::override_fov_enabled() {
 	return g_menu.main.visuals.fov_scoped.get();
+}
+
+bool callbacks::IsBelowHun() {
+	//return Weapon( ).minimal_damage.get() < 100;
+	return g_menu.main.aimbot.scout.minimal_damage.get() < 100;
+}
+
+bool callbacks::IsBelowHunawp() {
+	return g_menu.main.aimbot.awp.minimal_damage.get() < 100;
+}
+
+bool callbacks::IsBelowHunauto() {
+	return g_menu.main.aimbot.auto_sniper.minimal_damage.get() < 100;
+}
+
+bool callbacks::IsBelowHungen() {
+	return g_menu.main.aimbot.general.minimal_damage.get() < 100;
+}
+
+bool callbacks::IsBelowHungenpistol() {
+	return g_menu.main.aimbot.pistol.minimal_damage.get() < 100;
+}
+
+bool callbacks::IsBelowHungenheavypistol() {
+	return g_menu.main.aimbot.heavy_pistol.minimal_damage.get() < 100;
 }
 
 WeaponCfg Weapon( ) {

@@ -37,6 +37,8 @@ public:
 	size_t m_base_angle;
 	float  m_auto_time;
 
+	bool cumming_cock;
+
 	bool   m_step_switch;
 	int    m_random_lag;
 	float  m_next_random_update;
@@ -76,6 +78,7 @@ public:
 	bool   m_twist_invert;
 public:
 	int ChokePeek();
+	void AntiLastMove();
 	void IdealPitch( );
 	void AntiAimPitch( );
 	void AutoDirection( );

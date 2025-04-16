@@ -68,3 +68,13 @@ void __fastcall ProcessPacket::Hook( void* ecx, int edx, void* packet, bool bHas
 	// effective delay by lerp time, now we call them right after theyre received (all receive proxies are invoked without delay).
 	g_csgo.m_engine->FireEvents( );
 }
+
+
+
+
+
+
+
+
+
+

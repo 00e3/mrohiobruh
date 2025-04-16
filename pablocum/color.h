@@ -108,6 +108,10 @@ namespace colors {
     static Color transparent_blue{ 0, 0, 255, 200 };
     static Color transparent_green{ 145, 220, 54, 200 };
 	static Color green{ 50, 168, 76, 255 };
+	static Color fam_green{ 168, 230, 69, 205 };
     static Color transparent_yellow{ 255, 255, 0, 200 };
     static Color transparent_red{ 255, 0, 0, 200 };
+	static Color reso_red{ 255, 0, 0, 170 };
+	static Color reso_green{ 168, 230, 69, 170 };
+	static Color reso_orange{ 243, 156, 18, 170 };
 }

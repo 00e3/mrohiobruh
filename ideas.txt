@@ -1,0 +1,5 @@
+default config on load
+hold fakelag (hold fire during choke, and fire again)
+improve freestand
+add stand fakelag
+add in break, out break, mid break lby break

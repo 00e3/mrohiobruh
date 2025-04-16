@@ -95,6 +95,8 @@ bool CSGO::init( ) {
 	view_recoil_tracking = m_cvar->FindVar( HASH( "view_recoil_tracking" ) );
 	cl_fullupdate = m_cvar->FindVar( HASH( "cl_fullupdate" ) );
 	r_DrawSpecificStaticProp = m_cvar->FindVar( HASH( "r_DrawSpecificStaticProp" ) );
+	mat_bumpmap = m_cvar->FindVar(HASH("mat_bumpmap"));
+	mat_normmap = m_cvar->FindVar(HASH("mat_normalmaps"));
 	cl_crosshair_sniper_width = m_cvar->FindVar( HASH( "cl_crosshair_sniper_width" ) );
 	hud_scaling = m_cvar->FindVar( HASH( "hud_scaling" ) );
 	sv_clip_penetration_traces_to_players = m_cvar->FindVar( HASH( "sv_clip_penetration_traces_to_players" ) );
@@ -116,8 +118,10 @@ bool CSGO::init( ) {
 	viewmodel_offset_x->m_callbacks.RemoveAll( );
 	viewmodel_offset_y->m_callbacks.RemoveAll( );
 	viewmodel_offset_z->m_callbacks.RemoveAll( );
-	//cl_lagcompensation->m_callbacks.RemoveAll( );
-	//cl_lagcompensation->m_flags &= ~FCVAR_NOT_CONNECTED;
+	if (g_menu.main.config.testing.get()) {
+		cl_lagcompensation->m_callbacks.RemoveAll( );
+		cl_lagcompensation->m_flags &= ~FCVAR_NOT_CONNECTED;
+	}
 
 	// classes by sig.
 	m_move_helper = pattern::find( m_client_dll, XOR( "8B 0D ? ? ? ? 8B 46 08 68" ) ).add( 2 ).get< IMoveHelper* >( 2 );

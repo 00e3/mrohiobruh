@@ -35,6 +35,10 @@ public:
 	__forceinline size_t get( ) {
 		return m_active_item;
 	}
+	__forceinline const std::vector<std::string>& get_items() const {
+		return m_items;  // Returns a const reference to m_items
+	}
+
 
 	__forceinline void select( size_t idx ) {
 		if( idx < m_items.size( ) )
@@ -60,6 +64,23 @@ public:
 		// i.e items removed.
 		return XOR( "error" );
 	}
+
+	__forceinline void set_items(const std::vector<std::string>& items) {
+		m_items = items;
+
+		// Reset selection if current one is invalid
+		if (m_active_item >= m_items.size())
+			m_active_item = 0;
+	}
+
+	__forceinline void set_itemsID(const std::vector<int>& items) {
+		m_items.clear();  // Clear any old items
+		for (int item : items) {
+			m_items.push_back(std::to_string(item));  // Convert the IDs to strings and add to the list
+		}
+	}
+
+
 
 protected:
 	bool					   m_open;

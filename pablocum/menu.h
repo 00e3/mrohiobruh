@@ -49,6 +49,7 @@ public:
 	Checkbox      debug_aim_points;
 	Checkbox      aim_matrix;
 	Colorpicker   aim_matrix_col;
+	Colorpicker   ov_correction_col;
 
 	Keybind       increase_firerate;
 	Slider        firerate;
@@ -111,6 +112,7 @@ public:
 			RegisterElement( &general.penetrate );
 
 			general.minimal_damage_hp.setup( XOR( "scale damage on hp" ), XOR( "minimal_damage_hp_general" ) );
+			general.minimal_damage_hp.AddShowCallback(callbacks::IsBelowHun);
 			general.minimal_damage_hp.AddShowCallback( callbacks::IsGeneral );
 			RegisterElement( &general.minimal_damage_hp );
 
@@ -179,6 +181,7 @@ public:
 			RegisterElement( &auto_sniper.penetrate );
 
 			auto_sniper.minimal_damage_hp.setup( XOR( "scale damage on hp" ), XOR( "minimal_damage_hp_auto_sniper" ) );
+			auto_sniper.minimal_damage_hp.AddShowCallback(callbacks::IsBelowHunauto);
 			auto_sniper.minimal_damage_hp.AddShowCallback( callbacks::IsAuto );
 			RegisterElement( &auto_sniper.minimal_damage_hp );
 
@@ -247,6 +250,7 @@ public:
 			RegisterElement( &awp.penetrate );
 
 			awp.minimal_damage_hp.setup( XOR( "scale damage on hp" ), XOR( "minimal_damage_hp_awp" ) );
+			awp.minimal_damage_hp.AddShowCallback(callbacks::IsBelowHunawp);
 			awp.minimal_damage_hp.AddShowCallback( callbacks::IsAwp );
 			RegisterElement( &awp.minimal_damage_hp );
 
@@ -315,6 +319,7 @@ public:
 			RegisterElement( &scout.penetrate );
 
 			scout.minimal_damage_hp.setup( XOR( "scale damage on hp" ), XOR( "minimal_damage_hp_scout" ) );
+			scout.minimal_damage_hp.AddShowCallback(callbacks::IsBelowHun);
 			scout.minimal_damage_hp.AddShowCallback( callbacks::IsScout );
 			RegisterElement( &scout.minimal_damage_hp );
 
@@ -374,7 +379,7 @@ public:
 			heavy_pistol.body_scale.AddShowCallback( callbacks::IsHPistol );
 			RegisterElement( &heavy_pistol.body_scale );
 
-			heavy_pistol.minimal_damage.setup( XOR( "minimal damage" ), XOR( "minimal_damage_heavy_pistol" ), 1.f, 100.f, true, 0, 40.f, 1.f, XOR( L"hp" ) );
+			heavy_pistol.minimal_damage.setup( XOR( "minimal damage" ), XOR( "minimal_damage_heavy_pistol" ), 1.f, 110.f, true, 0, 40.f, 1.f, XOR( L"hp" ) );
 			heavy_pistol.minimal_damage.AddShowCallback( callbacks::IsHPistol );
 			RegisterElement( &heavy_pistol.minimal_damage );
 
@@ -383,6 +388,7 @@ public:
 			RegisterElement( &heavy_pistol.penetrate );
 
 			heavy_pistol.minimal_damage_hp.setup( XOR( "scale damage on hp" ), XOR( "minimal_damage_hp_heavy_pistol" ) );
+			heavy_pistol.minimal_damage_hp.AddShowCallback(callbacks::IsBelowHungenheavypistol);
 			heavy_pistol.minimal_damage_hp.AddShowCallback( callbacks::IsHPistol );
 			RegisterElement( &heavy_pistol.minimal_damage_hp );
 
@@ -430,7 +436,7 @@ public:
 			pistol.hitbox_air.AddShowCallback( callbacks::IsPistol );
 			RegisterElement( &pistol.hitbox_air );
 
-			pistol.air_scale.setup( XOR( "in air scale multiplier" ), XOR( "hitbox_air_scale_pistol" ), 1.f, 100.f, true, 0, 90.f, 1.f, XOR( L"%" ) );
+			pistol.air_scale.setup( XOR( "in air scale" ), XOR( "hitbox_air_scale_pistol" ), 1.f, 100.f, true, 0, 90.f, 1.f, XOR( L"%" ) );
 			pistol.air_scale.AddShowCallback( callbacks::IsPistol );
 			RegisterElement( &pistol.air_scale );
 
@@ -442,7 +448,7 @@ public:
 			pistol.body_scale.AddShowCallback( callbacks::IsPistol );
 			RegisterElement( &pistol.body_scale );
 
-			pistol.minimal_damage.setup( XOR( "minimal damage" ), XOR( "minimal_damage_pistol" ), 1.f, 100.f, true, 0, 40.f, 1.f, XOR( L"hp" ) );
+			pistol.minimal_damage.setup( XOR( "minimal damage" ), XOR( "minimal_damage_pistol" ), 1.f, 110.f, true, 0, 40.f, 1.f, XOR( L"hp" ) );
 			pistol.minimal_damage.AddShowCallback( callbacks::IsPistol );
 			RegisterElement( &pistol.minimal_damage );
 
@@ -451,6 +457,7 @@ public:
 			RegisterElement( &pistol.penetrate );
 
 			pistol.minimal_damage_hp.setup( XOR( "scale damage on hp" ), XOR( "minimal_damage_hp_pistol" ) );
+			pistol.minimal_damage_hp.AddShowCallback(callbacks::IsBelowHungenpistol);
 			pistol.minimal_damage_hp.AddShowCallback( callbacks::IsPistol );
 			RegisterElement( &pistol.minimal_damage_hp );
 
@@ -496,6 +503,9 @@ public:
 
 		ov_correction.setup( XOR( "override correction" ), XOR( "ov_correction" ) );
 		RegisterElement( &ov_correction, 1 );
+
+		ov_correction_col.setup(XOR("aim matrix color"), XOR("ov_correction_col"), colors::fam_green);
+		RegisterElement(&ov_correction_col, 1);
 
 		increase_firerate.setup( XOR( "increase firerate" ), XOR( "increase_firerate" ) );
 		increase_firerate.SetToggleCallback( callbacks::ToggleIncreaseFirerate );
@@ -1151,7 +1161,7 @@ public:
 		sky_box.setup( XOR( "skyboxes" ), XOR( "sky_box" ), { XOR( "default" ), XOR( "tibet" ), XOR( "embassy" ), XOR( "italy" ), XOR( "daylight" ), XOR( "cloudy" ), XOR( "night 1" ), XOR( "night 2" ), XOR( "night Flat" ), XOR( "day hd" ), XOR( "day" ), XOR( "rural" ), XOR( "vertigo hd" ), XOR( "vertigo blue hd" ), XOR( "vertigo" ),XOR( "vietnam" ),XOR( "dusty sky" ),XOR( "jungle" ),XOR( "nuke" ),XOR( "office" ) } );
 		RegisterElement( &sky_box );
 
-		world.setup( XOR( "world" ), XOR( "world" ), { XOR( "world modulate" ), XOR( "fullbright" ),XOR( "sky" ),XOR( "soft shadows" ) } );
+		world.setup( XOR( "world" ), XOR( "world" ), { XOR( "world modulate" ), XOR( "fullbright" ),XOR( "sky" ),XOR( "soft shadows" ), XOR("lean")});
 		RegisterElement( &world );
 
 		/*Colorpicker setup: label, file id, color, color ptr, use_label*/
@@ -2764,21 +2774,14 @@ public:
 	Checkbox killfeed;
 	Checkbox ranks;
 	MultiDropdown animations;
-
 	Slider   aspect_ratio;
-
-	Edit   player_id;
-	Button whitelist_id;
-	Button remove_id;
-	Button clear_ids;
-
 public:
 	void init( )
 	{
 		SetTitle( XOR( "misc" ) );
 
-	//	tab.setup( XOR( "" ), XOR( "misc_tab" ), { XOR( "general" ), XOR( "whitelist" ) }, false );
-	//	RegisterElement( &tab );
+		tab.setup( XOR( "" ), XOR( "misc_tab" ), { XOR( "general" ), XOR( "whitelist" ) }, false );
+		RegisterElement( &tab );
 
 		buy1.setup( XOR( "auto buy items" ), XOR( "auto_buy1" ),
 			{
@@ -2908,25 +2911,6 @@ public:
 		animations.setup( XOR( "local animations" ), XOR( "animations" ), { XOR( "static legs in air" ), XOR( "zero pitch on land" ), XOR( "remove desync jitter" ), XOR( "remove shot animation" ), XOR( "interpolation" ), XOR( "remove flick" ) } );
 	//	animations.AddShowCallback( callbacks::IsMisc );
 		RegisterElement( &animations, 1 );
-
-		player_id.setup(XOR("player id"), XOR("id"), 2);
-		player_id.AddShowCallback(callbacks::IsWhitelist);
-		RegisterElement(&player_id);
-
-		whitelist_id.setup(XOR("add"));
-		whitelist_id.SetCallback(callbacks::WhitelistAdd);
-		whitelist_id.AddShowCallback(callbacks::IsWhitelist);
-		RegisterElement(&whitelist_id);
-
-		remove_id.setup(XOR("remove"));
-		remove_id.SetCallback(callbacks::WhitelistRemove);
-		remove_id.AddShowCallback(callbacks::IsWhitelist);
-		RegisterElement(&remove_id);
-
-		clear_ids.setup(XOR("clear"));
-		clear_ids.SetCallback(callbacks::WhitelistClear);
-		clear_ids.AddShowCallback(callbacks::IsWhitelist);
-		RegisterElement(&clear_ids);
 	}
 };
 
@@ -2942,6 +2926,21 @@ public:
 	void init()
 	{
 		SetTitle(XOR("player list"));
+
+		player_id.setup(XOR("player id"), XOR("id"), 20);
+		RegisterElement(&player_id);
+
+		whitelist_id.setup(XOR("add id"));
+		whitelist_id.SetCallback(callbacks::WhitelistAdd);
+		RegisterElement(&whitelist_id);
+
+		remove_id.setup(XOR("remove id"));
+		remove_id.SetCallback(callbacks::WhitelistRemove);
+		RegisterElement(&remove_id);
+
+		clear_ids.setup(XOR("clear ids"));
+		clear_ids.SetCallback(callbacks::WhitelistClear);
+		RegisterElement(&clear_ids);
 	}
 };
 
@@ -2962,6 +2961,8 @@ public:
 	Button   load;
 	Button   resetconfig;
 	Keybind  menu_key;
+	Checkbox testing;
+	Checkbox config_logs;
 
 public:
 
@@ -2975,6 +2976,9 @@ public:
 		menu_key.setup( XOR( "menu key" ), XOR( "menu_key" ), VK_INSERT );
 		RegisterElement( &menu_key );
 
+		testing.setup(XOR("testing mode"), XOR("testing"));
+		RegisterElement(&testing);
+
 		mode.setup( XOR( "safety mode" ), XOR( "mode" ), { XOR( "matchmaking" ), XOR( "no-spread" ) } );
 		RegisterElement( &mode, 1 );
 
@@ -2982,42 +2986,42 @@ public:
 		config.RemoveFlags( ElementFlags::SAVE );
 		RegisterElement( &config, 1 );
 
-		key1.setup( XOR( "configuration key 1" ), XOR( "cfg_key1" ) );
+		key1.setup( XOR( "key 1" ), XOR( "cfg_key1" ) );
 		key1.RemoveFlags( ElementFlags::SAVE );
 		key1.SetCallback( callbacks::SaveHotkeys );
 		key1.AddShowCallback( callbacks::IsConfig1 );
 		key1.SetToggleCallback( callbacks::ConfigLoad1 );
 		RegisterElement( &key1, 1 );
 
-		key2.setup( XOR( "configuration key 2" ), XOR( "cfg_key2" ) );
+		key2.setup( XOR( "key 2" ), XOR( "cfg_key2" ) );
 		key2.RemoveFlags( ElementFlags::SAVE );
 		key2.SetCallback( callbacks::SaveHotkeys );
 		key2.AddShowCallback( callbacks::IsConfig2 );
 		key2.SetToggleCallback( callbacks::ConfigLoad2 );
 		RegisterElement( &key2, 1 );
 
-		key3.setup( XOR( "configuration key 3" ), XOR( "cfg_key3" ) );
+		key3.setup( XOR( "key 3" ), XOR( "cfg_key3" ) );
 		key3.RemoveFlags( ElementFlags::SAVE );
 		key3.SetCallback( callbacks::SaveHotkeys );
 		key3.AddShowCallback( callbacks::IsConfig3 );
 		key3.SetToggleCallback( callbacks::ConfigLoad3 );
 		RegisterElement( &key3, 1 );
 
-		key4.setup( XOR( "configuration key 4" ), XOR( "cfg_key4" ) );
+		key4.setup( XOR( "key 4" ), XOR( "cfg_key4" ) );
 		key4.RemoveFlags( ElementFlags::SAVE );
 		key4.SetCallback( callbacks::SaveHotkeys );
 		key4.AddShowCallback( callbacks::IsConfig4 );
 		key4.SetToggleCallback( callbacks::ConfigLoad4 );
 		RegisterElement( &key4, 1 );
 
-		key5.setup( XOR( "configuration key 5" ), XOR( "cfg_key5" ) );
+		key5.setup( XOR( "key 5" ), XOR( "cfg_key5" ) );
 		key5.RemoveFlags( ElementFlags::SAVE );
 		key5.SetCallback( callbacks::SaveHotkeys );
 		key5.AddShowCallback( callbacks::IsConfig5 );
 		key5.SetToggleCallback( callbacks::ConfigLoad5 );
 		RegisterElement( &key5, 1 );
 
-		key6.setup( XOR( "configuration key 6" ), XOR( "cfg_key6" ) );
+		key6.setup( XOR( "key 6" ), XOR( "cfg_key6" ) );
 		key6.RemoveFlags( ElementFlags::SAVE );
 		key6.SetCallback( callbacks::SaveHotkeys );
 		key6.AddShowCallback( callbacks::IsConfig6 );
@@ -3032,9 +3036,8 @@ public:
 		load.SetCallback( callbacks::ConfigLoad );
 		RegisterElement( &load, 1 );
 
-		/*load.setup(XOR("reset"));
-		load.SetCallback(callbacks::ConfigReset);
-		RegisterElement(&load, 1);*/
+		config_logs.setup(XOR("config logs"), XOR("config_logs"));
+		RegisterElement(&config_logs, 1);
 	}
 };
 
@@ -3059,7 +3062,7 @@ public:
 public:
 	void init( )
 	{
-		SetPosition( 50, 50 );
+		SetPosition( 500, 350);
 		SetSize( 630, 540 );
 
 		// aim.

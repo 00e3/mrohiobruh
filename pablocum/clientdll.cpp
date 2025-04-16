@@ -225,6 +225,9 @@ void Hooks::FrameStageNotify( Stage_t stage ) {
 		// restore non-compressed netvars.
 		g_netdata.apply( );
 
+		// whitelist reqs
+		//callbacks::process_pending_whitelists();
+
 		// update all players.
 
 		for ( int i = 1; i <= g_csgo.m_globals->m_max_clients; i++ ) {

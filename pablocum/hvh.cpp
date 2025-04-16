@@ -153,6 +153,47 @@ void HVH::AutoDirection( ) {
 	}
 }
 
+float OFFSET;
+void HVH::AntiLastMove() {
+	if (g_input.GetKeyState(g_menu.main.movement.fakewalk.get()))
+		return;
+
+	if (!g_cl.m_local->GetGroundEntity())
+		return;
+
+	bool pressed_move = g_cl.m_cmd->m_buttons & IN_FORWARD || g_cl.m_cmd->m_buttons & IN_MOVELEFT || g_cl.m_cmd->m_buttons & IN_BACK || g_cl.m_cmd->m_buttons & IN_MOVERIGHT || g_cl.m_cmd->m_buttons & IN_JUMP;
+
+	if (pressed_move)
+		return;
+
+	vec3_t velocity = g_cl.m_local->m_vecVelocity();
+
+	if (velocity.length() < 0.1f)
+		return;
+
+	float friction = g_csgo.sv_friction->GetFloat() * g_cl.m_local->m_surfaceFriction();
+
+	int ticks_to_stop;
+	for (ticks_to_stop = 0; ticks_to_stop < 16; ++ticks_to_stop) {
+		float speed = velocity.length();
+
+		if (speed < 0.1f)
+			break;
+
+		float control = std::max(speed, g_csgo.sv_stopspeed->GetFloat());
+		float drop = control * friction * g_csgo.m_globals->m_interval;
+		float newspeed = std::max(0.f, speed - drop);
+		if (newspeed != speed) {
+			newspeed /= speed;
+			velocity *= newspeed;
+		}
+	}
+
+	if (ticks_to_stop < (14 - g_csgo.m_cl->m_choked_commands) && !g_csgo.m_cl->m_choked_commands)
+		g_notify.add("AVOID-LBY", g_gui.m_color);
+		g_cl.m_cmd->m_view_angles.y += OFFSET; // OFFSET = how much you will flick your last moving lby
+}
+
 void HVH::GetAntiAimDirection( ) {
 	if ( !m_yaw ) {
 		m_direction = g_cl.m_cmd->m_view_angles.y;
@@ -485,7 +526,7 @@ void HVH::DoRealAntiAim( ) {
 	// if we have a yaw active, which is true if we arrived here.
 	// set the yaw to the direction before applying any other operations.
 	g_cl.m_cmd->m_view_angles.y = m_direction;
-
+	float range = m_jitter_range / 2.f;
 	if ( !m_exploit ) {
 		switch ( m_yaw ) {
 
@@ -498,10 +539,9 @@ void HVH::DoRealAntiAim( ) {
 		case 2: {
 
 			// get the range from the menu.
-			float range = m_jitter_range / 2.f;
-
+			AntiLastMove();
 			// set angle.
-			g_cl.m_cmd->m_view_angles.y += g_csgo.RandomFloat( -range, range );
+			//g_cl.m_cmd->m_view_angles.y += g_csgo.RandomFloat( -range, range );
 			break;
 		}
 		case 3: {
@@ -523,20 +563,12 @@ void HVH::DoRealAntiAim( ) {
 
 			  // random.
 		case 5:
-			// check update time.
-			if ( g_cl.m_curtime >= m_next_random_update ) {
+			// get the range from the menu.
 
-				// set new random angle.
-				m_random_angle = g_csgo.RandomFloat( -180.f, 180.f );
 
-				// set next update time
-				m_next_random_update = g_cl.m_curtime + m_rand_update;
-			}
-
-			// apply angle.
-			g_cl.m_cmd->m_view_angles.y = m_random_angle;
+			// set angle.
+			g_cl.m_cmd->m_view_angles.y += g_csgo.RandomFloat(-range, range);
 			break;
-
 		default:
 			break;
 		}
@@ -737,7 +769,7 @@ void HVH::AntiAim( ) {
 		return;
 
 	// disable conditions.
-	if ( g_csgo.m_gamerules->m_bFreezePeriod( ) || ( g_cl.m_flags & FL_FROZEN ) || g_cl.m_round_end || ( g_cl.m_cmd->m_buttons & IN_USE ) || g_cl.m_shot )
+	if ( g_csgo.m_gamerules->m_bFreezePeriod( ) || ( g_cl.m_flags & FL_FROZEN ) || g_cl.m_round_end || ( g_cl.m_cmd->m_buttons & IN_USE ) || g_hvh.cumming_cock == true || g_cl.m_shot )
 		return;
 
 	m_mode = AntiAimMode::STAND;

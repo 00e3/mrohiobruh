@@ -289,6 +289,7 @@
     <ClInclude Include="vector3.h" />
     <ClInclude Include="visuals.h" />
     <ClInclude Include="vmt.h" />
+    <ClInclude Include="whitelist.h" />
     <ClInclude Include="winapir.h" />
     <ClInclude Include="x86.h" />
     <ClInclude Include="xorstr.h" />
@@ -355,6 +356,7 @@
     <ClCompile Include="surface.cpp" />
     <ClCompile Include="viewrender.cpp" />
     <ClCompile Include="visuals.cpp" />
+    <ClCompile Include="whitelist.cpp" />
     <ClCompile Include="wndproc.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

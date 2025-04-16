@@ -14,6 +14,10 @@ struct OffScreenDamageData_t {
     __forceinline OffScreenDamageData_t( float time, float m_color_step, Color color ) : m_time{ time }, m_color{ color } {}
 };
 
+struct ResolveInfo {
+    std::string label;
+    Color color;
+};
 class Visuals {
 public:
 	std::array< std::pair<bool, Rect>, 64 > m_box;
@@ -95,7 +99,9 @@ public:
     };
 
 public:
-    std::string ResolveConfidence( const int& index );
+
+    // In visuals.h
+    ResolveInfo ResolveConfidence(const int& index);
 
     render::Font& GetEspFont(bool small_font);
 
@@ -127,5 +133,4 @@ public:
     void DrawBeams( );
 	void DebugAimbotPoints( Player* player );
 };
-
 extern Visuals g_visuals;

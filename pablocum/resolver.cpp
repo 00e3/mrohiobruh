@@ -201,7 +201,7 @@ void Resolver::MatchShot( AimPlayer* data, LagRecord& record, LagRecord* previou
 	record.m_eye_angles.x = previous->m_eye_angles.x;
 }
 
-
+#include <cstdio>
 void Resolver::CorrectFootYaw( LagRecord& record, LagRecord* previous, CCSGOPlayerAnimState* state ) {
 	AimPlayer* data = &g_aimbot.m_players[ record.m_player->index( ) - 1 ];
 	if ( !data )
@@ -231,22 +231,28 @@ void Resolver::CorrectFootYaw( LagRecord& record, LagRecord* previous, CCSGOPlay
 	if ( raw_yaw_ideal < 0.f )
 		raw_yaw_ideal += 360.f;
 
-	for ( int i = ANIMTAG_STARTCYCLE_N; i <= ANIMTAG_STARTCYCLE_NW; i++ )
-	{
+	for (int i = ANIMTAG_STARTCYCLE_N; i <= ANIMTAG_STARTCYCLE_NW; i++) {
 		const float pred_cycle = math::ClampCycle(
-			g_cl.m_anim_data.GetFirstSequenceAnimTag( record.m_player, move_seq, i, 0.f, 1.f ) + local_cycle_increment );
+			g_cl.m_anim_data.GetFirstSequenceAnimTag(record.m_player, move_seq, i, 0.f, 1.f) + local_cycle_increment);
 
-		if ( static_cast< int >( pred_cycle * 1000.f ) == static_cast< int >( record.m_layers[ ANIMATION_LAYER_MOVEMENT_MOVE ].m_cycle * 1000.f ) )
-		{
-			move_yaw = angles[ i - ANIMTAG_STARTCYCLE_N ];
+		printf("[CorrectFootYaw] Checking anim tag %d: pred_cycle=%.3f vs actual=%.3f\n",
+			i, pred_cycle, record.m_layers[ANIMATION_LAYER_MOVEMENT_MOVE].m_cycle);
+
+		if (static_cast<int>(pred_cycle * 1000.f) == static_cast<int>(record.m_layers[ANIMATION_LAYER_MOVEMENT_MOVE].m_cycle * 1000.f)) {
+			move_yaw = angles[i - ANIMTAG_STARTCYCLE_N];
+			printf("[CorrectFootYaw] Matched move_yaw: %.2f (tag index: %d)\n", move_yaw, i);
 			break;
 		}
 	}
 
-	if ( move_yaw != FLT_MAX )
-	{
-		state->m_abs_yaw = math::AngleDiff( raw_yaw_ideal, move_yaw );
+	if (move_yaw != FLT_MAX) {
+		state->m_abs_yaw = math::AngleDiff(raw_yaw_ideal, move_yaw);
 		record.m_mode = Modes::RESOLVE_DESYNC;
+
+		printf("[CorrectFootYaw] Calculated abs_yaw: %.2f | Mode set to RESOLVE_DESYNC\n", state->m_abs_yaw);
+	}
+	else {
+		printf("[CorrectFootYaw] Failed to determine move_yaw.\n");
 	}
 }
 
@@ -328,12 +334,6 @@ void Resolver::ResolveAngles( Player* player, LagRecord& record, LagRecord* prev
 	if ( previous ) {
 		if ( record.m_lag == 1 && previous->m_lag == 1 )
 			return;
-	}
-
-	const float& frac = player->m_flGuardianTooFarDistFrac( );
-	if ( frac != 0.000000f ) {
-		record.m_eye_angles.y = frac;
-		return;
 	}
 
 	if ( ( record.m_mode == Modes::RESOLVE_STAND || record.m_mode == Modes::RESOLVE_AIR ) && g_cl.m_correction_override && m_override.m_player == record.m_player ) {

@@ -1,27 +1,29 @@
 #pragma once
+#include "whitelist.h"
 
 namespace callbacks {
 	bool IsMisc( );
 	bool IsWhitelist( );
-
-	void WhitelistAdd( );
-	void WhitelistRemove( );
-	void WhitelistClear( );
-
 	bool IsEnemy( );
 	bool IsFriendly( );
 	bool IsLocal( );
 	bool IsNotLocal( );
-
+	bool IsBelowHun();
+	bool IsBelowHungenheavypistol();
+	bool IsBelowHungenpistol();
+	bool IsBelowHungen();
+	bool IsBelowHunawp();
+	bool IsBelowHunauto();
 	bool IsGeneral( );
 	bool IsAuto( );
 	bool IsAwp( );
 	bool IsScout( );
 	bool IsHPistol( );
+	void WhitelistRemove();
+	void WhitelistClear();
+	void WhitelistAdd();
 	bool IsPistol( );
-
 	bool override_fov_enabled();
-
 	void UpdateFront( );
 	void UpdateBack( );
 	void UpdateRight( );
@@ -29,7 +31,6 @@ namespace callbacks {
 	void UpdateInverter( );
 	void UpdateExploit( );
 	void ToggleBAim( );
-
 	void ToggleIncreaseFirerate( );
 	void ToggleDamage( );
 	bool grenade_prediction_vis();
@@ -142,7 +143,5 @@ namespace callbacks {
 	bool KNIFE_BOWIE( );
 	bool KNIFE_BUTTERFLY( );
 	bool KNIFE_SHADOW_DAGGERS( );
-
-	bool niggasinparis( ); //hellyeniggasinparisykyk
-
+	bool niggasinparis( ); //
 }

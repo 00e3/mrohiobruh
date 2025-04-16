@@ -345,6 +345,9 @@
     <ClInclude Include="networking.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="whitelist.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="wndproc.cpp">
@@ -531,6 +534,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="networking.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="whitelist.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

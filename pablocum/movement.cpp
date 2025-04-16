@@ -235,27 +235,29 @@ void Movement::FixMove( CUserCmd* cmd )
 	dir *= len;
 
 	// fix ladder and noclip.
-	if ( g_cl.m_local->m_MoveType( ) == MOVETYPE_LADDER )
+	if (g_cl.m_local->m_MoveType() == MOVETYPE_LADDER)
 	{
 		// invert directon for up and down.
-		if ( cmd->m_view_angles.x >= 45.f && g_cl.m_strafe_angles.x < 45.f && std::abs( delta ) <= 65.f )
+		if (cmd->m_view_angles.x >= 45.f && g_cl.m_strafe_angles.x < 45.f && std::abs(delta) <= 65.f)
 			dir.x = -dir.x;
 
 		// write to movement.
 		cmd->m_forward_move = dir.x;
 		cmd->m_side_move = dir.y;
+		g_hvh.cumming_cock = true;
 	}
 
 	// we are moving normally.
 	else
 	{
 		// we must do this for pitch angles that are out of bounds.
-		if ( cmd->m_view_angles.x < -90.f || cmd->m_view_angles.x > 90.f )
+		if (cmd->m_view_angles.x < -90.f || cmd->m_view_angles.x > 90.f)
 			dir.x = -dir.x;
 
 		// set move.
 		cmd->m_forward_move = dir.x;
 		cmd->m_side_move = dir.y;
+		g_hvh.cumming_cock = false;
 	}
 
 	cmd->m_buttons &= ~( IN_FORWARD | IN_BACK | IN_MOVELEFT | IN_MOVERIGHT );

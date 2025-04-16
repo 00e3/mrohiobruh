@@ -5,72 +5,87 @@ Aimbot g_aimbot{ };
 
 inline WeaponCfg m_settings;
 
-void Aimbot::UpdateSettings( )
+void Aimbot::UpdateSettings()
 {
-	if ( g_cl.m_weapon && g_cl.m_weapon_id != ZEUS )
+	static int last_weapon_id = -1;
+
+	auto GetWeaponName = [](int id) -> const char* {
+		switch (id) {
+		case G3SG1:     return "auto";
+		case SCAR20:    return "auto";
+		case AWP:       return "AWP";
+		case SSG08:     return "scout";
+		case DEAGLE:    return "heavy pistol";
+		case REVOLVER:  return "heavy pistol";
+		case ZEUS:      return "zeus";
+		default:        return "default";
+		}
+		};
+
+	if (g_cl.m_weapon && g_cl.m_weapon_id != ZEUS)
 	{
+		if (g_cl.m_weapon_id != last_weapon_id)
+		{
+			last_weapon_id = g_cl.m_weapon_id;
+
+			const char* weapon_name = GetWeaponName(g_cl.m_weapon_id);
+
+			g_csgo.m_hud_chat->ChatPrintf(
+				tfm::format(" %s[tap] %sLoaded %s%s%s config",
+					"\x10", "\x01", "\x04", weapon_name, "\x01").c_str());
+		}
+
 		m_settings = g_menu.main.aimbot.general;
 
-		switch ( g_cl.m_weapon_type )
+		switch (g_cl.m_weapon_type)
 		{
 		case WEAPONTYPE_SNIPER_RIFLE:
-		{
-			if ( g_cl.m_weapon_id == G3SG1 || g_cl.m_weapon_id == SCAR20 ) {
+			if (g_cl.m_weapon_id == G3SG1 || g_cl.m_weapon_id == SCAR20)
 				m_settings = g_menu.main.aimbot.auto_sniper;
-			}
-			else if ( g_cl.m_weapon_id == AWP ) {
+			else if (g_cl.m_weapon_id == AWP)
 				m_settings = g_menu.main.aimbot.awp;
-			}
-			else if ( g_cl.m_weapon_id == SSG08 ) {
+			else if (g_cl.m_weapon_id == SSG08)
 				m_settings = g_menu.main.aimbot.scout;
-			}
-		} break;
+			break;
+
 		case WEAPONTYPE_PISTOL:
-		{
-			if ( g_cl.m_weapon_id == DEAGLE || g_cl.m_weapon_id == REVOLVER ) {
+			if (g_cl.m_weapon_id == DEAGLE || g_cl.m_weapon_id == REVOLVER)
 				m_settings = g_menu.main.aimbot.heavy_pistol;
-			}
-			else {
+			else
 				m_settings = g_menu.main.aimbot.pistol;
-			}
-		} break;
+			break;
 		}
+
 		return;
 	}
 
-	m_settings.hitchance_amount.set( 70 );
-	m_settings.accuracy_boost.set( 100 );
+	m_settings.hitchance_amount.set(55);
+	m_settings.accuracy_boost.set(35);
 
-	m_settings.hitbox.clear( );
-	m_settings.hitbox.select( 1 );
-	m_settings.hitbox.select( 2 );
+	m_settings.hitbox.clear();
+	m_settings.hitbox.select(1);
+	m_settings.hitbox.select(2);
 
 	m_settings.hitbox_air = m_settings.hitbox;
-	m_settings.minimal_damage.set( 100 );
-	m_settings.minimal_damage_hp.set( true );
-	m_settings.penetrate.set( false );
+	m_settings.minimal_damage.set(15);
+	m_settings.minimal_damage_hp.set(true);
+	m_settings.penetrate.set(true);
 
-	m_settings.air_scale.set( 100 );
-	m_settings.scale.set( 75 );
-	m_settings.body_scale.set( 75 );
+	m_settings.air_scale.set(50);
+	m_settings.scale.set(75);
+	m_settings.body_scale.set(75);
 
-	m_settings.baim1.clear( );
-	m_settings.baim2.clear( );
-	m_settings.prefer_safety.set( true );
-	m_settings.force_safety.clear( );
-	for ( int i = 0; i < 4; i++ )
-		m_settings.force_safety.select( i );
-	m_settings.baim_hp.set( 100 );
+	m_settings.baim1.clear();
+	m_settings.baim2.clear();
+	m_settings.prefer_safety.set(true);
+	m_settings.force_safety.clear();
+	for (int i = 0; i < 4; i++)
+		m_settings.force_safety.select(i);
+	m_settings.baim_hp.set(100);
 
-	m_settings.auto_stop.clear( );
-
-	//g_csgo.m_hud_chat->ChatPrintf( tfm::format( " %s[rax] %sLoaded %s%s %sconfig",
-	//	"\x07",
-	//	"\x01",
-	//	"\x04",
-	//	weapon_name,
-	//	"\x01" ).c_str( ) );
+	m_settings.auto_stop.clear();
 }
+
 
 void AimPlayer::SyncPlayerVelocity( LagRecord& current, LagRecord* previous )
 {
@@ -724,7 +739,8 @@ void Aimbot::Think( )
 	if ( !g_menu.main.aimbot.enable.get( ) )
 		return;
 
-	UpdateSettings( );
+	if (g_menu.main.config.config_logs.get())
+		UpdateSettings( );
 
 	vec3_t enemy_pos;
 	bool whitelisted;

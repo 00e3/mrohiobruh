@@ -152,6 +152,15 @@ void Visuals::ModulateWorld( )
 			s->ColorModulate( { 255, 255, 255, 255 } );
 	}
 
+	if (g_menu.main.visuals.world.get(5)) {
+		g_csgo.mat_bumpmap->SetValue(1);
+		g_csgo.mat_normmap->SetValue(1);
+	}
+	else {
+		g_csgo.mat_bumpmap->SetValue(0);
+		g_csgo.mat_normmap->SetValue(0);
+	}
+
 	static ConVar* cl_csm_shadows = g_csgo.m_cvar->FindVar( HASH( "cl_csm_shadows" ) );
 	if ( cl_csm_shadows )
 		cl_csm_shadows->SetValue( g_menu.main.visuals.world.get( 3 ) ? 0 : 1 );
@@ -339,29 +348,32 @@ void Visuals::NoSmoke( )
 	}
 }
 
-std::string Visuals::ResolveConfidence( const int& index ) {
-	AimPlayer* data = &g_aimbot.m_players[ index - 1 ];
-	if ( !data || data->m_records.empty( ) )
-		return "";
+ResolveInfo Visuals::ResolveConfidence(const int& index) {
+	AimPlayer* data = &g_aimbot.m_players[index - 1];
+	if (!data || data->m_records.empty())
+		return { "UNKNOWN", colors::reso_red };
 
-	LagRecord* current = &data->m_records[ 0 ];
-	if ( !current )
-		return "";
+	LagRecord* current = &data->m_records[0];
+	if (!current)
+		return { "UNKNOWN", colors::reso_red };
 
-	switch ( current->m_mode ) {
+	std::cout << "Mode: " << current->m_mode << std::endl;  // Debug print
+
+	switch (current->m_mode) {
 	case Modes::RESOLVE_NONE:
 	case Modes::RESOLVE_DESYNC:
-		return "VHIGH";
+		return { "TWIST", colors::reso_orange };
 	case Modes::RESOLVE_WALK:
+		return { "RUNNING", colors::reso_orange };
 	case Modes::RESOLVE_STAND_STOPPEDMOVING:
-		return "HIGH";
+		return { "HIGH", colors::reso_green };
 	case Modes::RESOLVE_STAND:
 	case Modes::RESOLVE_STAND_LOGIC:
 	case Modes::RESOLVE_UPDATE:
-		return "MEDIUM";
+		return { "MEDIUM", colors::reso_orange };
 	}
 
-	return "LOW";
+	return { "LOW", colors::reso_red };
 }
 
 void Visuals::RenderOverrideArrow( )
@@ -377,7 +389,7 @@ void Visuals::RenderOverrideArrow( )
 	if ( !record )
 		return;
 
-	Color clr = record->m_mode == Modes::RESOLVE_UPDATE ? Color( 255, 255, 255, 205 ) : Color( 168, 230, 69, 205 );
+	Color clr = record->m_mode == Modes::RESOLVE_UPDATE ? Color(255, 255, 255, 205) : g_menu.main.aimbot.ov_correction_col.get();
 
 	// here we do arrows
 	vec2_t screen_start, screen_end;
@@ -1338,13 +1350,17 @@ void Visuals::DrawPlayer( Player* player )
 				name = XOR( "MONEYBOT" );
 				break;
 			default:
-				if ( !name.empty( ) )
-					name.clear( );
+				name.clear( );
 				break;
 			}
 
 			if ( !name.empty( ) && g_menu.main.players.flags_enemy.get( 6 + cheat ) )
-				flags.push_back( { name, whitelisted ? Color { 150, 200, 60, low_alpha } : Color { 255, 255, 255, low_alpha } } );
+				flags.push_back({ name, Color{ 255, 255, 255, low_alpha } });
+		}
+
+		if (whitelisted && enemy)
+		{
+			flags.push_back({ XOR("WL"), Color{ 150, 200, 60, low_alpha } });
 		}
 
 		for ( auto it = items.begin( ); it != items.end( ); ++it )
@@ -1396,8 +1412,12 @@ void Visuals::DrawPlayer( Player* player )
 			if ( *it == 6 && enemy && lethal )
 				flags.push_back( { XOR( "LETHAL" ), lethal_color } );
 
-			if ( *it == 10 )
-				flags.push_back( { ResolveConfidence( index ).c_str( ), { 255, 255, 255, low_alpha } } );
+			if (*it == 10) {
+				ResolveInfo info = Visuals::ResolveConfidence(index);
+				Color col = info.color;
+
+				flags.push_back({ info.label.c_str(), { info.color } });
+			}
 		}
 
 		// iterate flags.
