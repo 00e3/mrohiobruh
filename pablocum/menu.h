@@ -764,12 +764,12 @@ public:
 		body_fake_stand.setup( XOR( "fake body" ), XOR( "body_fake_stnd" ), { XOR( "off" ), XOR( "110" ), XOR( "180" ), XOR( "twist" ), XOR( "beta" ), XOR( "v" ), XOR( "direction" ) } );
 		body_fake_stand.AddShowCallback( callbacks::IsAntiAimModeStand );
 		body_fake_stand.AddShowCallback( callbacks::HasStandYaw );
-		RegisterElement( &body_fake_stand, 1 );
+		RegisterElement( &body_fake_stand );
 
 		disable_body_fake_duck.setup( XOR( "disable fake body on duck" ), XOR( "disable_body_fake_duck" ) );
 		disable_body_fake_duck.AddShowCallback( callbacks::IsAntiAimModeStand );
 		disable_body_fake_duck.AddShowCallback( callbacks::HasStandYaw );
-		RegisterElement( &disable_body_fake_duck, 1 );
+		RegisterElement( &disable_body_fake_duck );
 
 		fake_yaw.setup( XOR( "fake yaw" ), XOR( "fake_yaw" ), { XOR( "off" ), XOR( "default" ), XOR( "relative" ), XOR( "jitter" ), XOR( "rotate" ), XOR( "random" ), XOR( "local view" ) } );
 		RegisterElement( &fake_yaw, 1 );
@@ -814,12 +814,6 @@ public:
 
 		lag_limit.setup( XOR( "limit" ), XOR( "lag_limit" ), 2, 16, true, 0, 2, 1.f );
 		RegisterElement( &lag_limit, 1 );
-
-		lag_airdelay.setup( XOR( "air lag delay" ), XOR( "lag_airdelay" ), 0, 2000, true, 0, 0, 50.f, XOR( L"ms" ) );
-		RegisterElement( &lag_airdelay, 1 );
-
-		lag_land.setup( XOR( "on land" ), XOR( "lag_land" ) );
-		RegisterElement( &lag_land, 1 );
 
 		manual_front.setup( XOR( "manual front" ), XOR( "manual_front" ) );
 		manual_front.SetToggleCallback( callbacks::UpdateFront );
@@ -2921,6 +2915,10 @@ public:
 	Button whitelist_id;
 	Button remove_id;
 	Button clear_ids;
+
+	MultiDropdown list;
+	Button updatewhitelistbuttontext;
+	Button remove_id;
 public:
 
 	void init()
@@ -2940,6 +2938,15 @@ public:
 
 		clear_ids.setup(XOR("clear ids"));
 		clear_ids.SetCallback(callbacks::WhitelistClear);
+		RegisterElement(&clear_ids);
+
+		list.setup(XOR("flags"), XOR("list"), { XOR("alias"), XOR("whitelist") });
+		RegisterElement(&list, 1);
+
+		updatewhitelistbuttontext.setup(XOR("whitelist"));
+		RegisterElement(&updatewhitelistbuttontext);
+
+		clear_ids.setup(XOR("blacklist"));
 		RegisterElement(&clear_ids);
 	}
 };
@@ -2962,7 +2969,9 @@ public:
 	Button   resetconfig;
 	Keybind  menu_key;
 	Checkbox testing;
+	MultiDropdown testing_list;
 	Checkbox config_logs;
+	Slider seedchance;
 
 public:
 
@@ -2979,8 +2988,16 @@ public:
 		testing.setup(XOR("testing mode"), XOR("testing"));
 		RegisterElement(&testing);
 
+		testing_list.setup(XOR("test these"), XOR("testing_list"), { XOR("og hitchance"), XOR("hitchance seeds")});
+		testing_list.AddShowCallback(callbacks::IsTesting);
+		RegisterElement(&testing_list, 1);
+
+		seedchance.setup("seeds", XOR("seed_chance"), 1.f, 255.f, true, 0, 64.f, 1.f, XOR(L""));
+		seedchance.AddShowCallback(callbacks::IsTestingHitchance);
+		RegisterElement(&seedchance, 1);
+
 		mode.setup( XOR( "safety mode" ), XOR( "mode" ), { XOR( "matchmaking" ), XOR( "no-spread" ) } );
-		RegisterElement( &mode, 1 );
+		RegisterElement( &mode );
 
 		config.setup( XOR( "configuration" ), XOR( "cfg" ), { XOR( "1" ), XOR( "2" ), XOR( "3" ), XOR( "4" ), XOR( "5" ), XOR( "6" ) } );
 		config.RemoveFlags( ElementFlags::SAVE );

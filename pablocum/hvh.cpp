@@ -1122,15 +1122,15 @@ void HVH::SendPacket( ) {
 		choke = g_cl.m_max_lag;
 	}
 
-	if ( ( g_cl.m_local->m_fFlags( ) & FL_ONGROUND ) && !( g_cl.m_flags & FL_ONGROUND ) && g_menu.main.antiaim.lag_land.get( ) ) {
+	if ( ( g_cl.m_local->m_fFlags( ) & FL_ONGROUND ) && !( g_cl.m_flags & FL_ONGROUND ) ) {
 		active = true;
 		choke = g_cl.m_max_lag;
 	}
 
-	if ( fabs( g_cl.m_curtime - last_ground_time ) < ( g_menu.main.antiaim.lag_airdelay.get( ) / 1000.f ) && g_cl.m_in_jump ) {
-		active = true;
-		choke = std::min( choke, 1 );
-	}
+	//if ( fabs( g_cl.m_curtime - last_ground_time ) < ( g_menu.main.antiaim.lag_airdelay.get( ) / 1000.f ) && g_cl.m_in_jump ) {
+	//	active = true;
+	//	choke = std::min( choke, 1 );
+	//}
 
 	if ( !g_cl.m_in_jump && data->m_landing && g_menu.main.antiaim.enable.get( ) && g_menu.main.antiaim.avoid_lby.get( ) == 2 ) {
 		active = true;

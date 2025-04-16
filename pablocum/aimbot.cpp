@@ -676,7 +676,7 @@ bool Aimbot::ScanPoint( const target_data_t& target, pt_data_t& point )
 
 	input.m_from = g_cl.m_local;
 	input.m_target = target.m_player;
-	input.m_start = g_cl.m_shoot_pos;
+	input.start = g_cl.m_shoot_pos;
 	input.m_pos = point.m_point;
 	input.m_damage = input.m_damage_pen = std::min( ( int )( m_damage_override ? g_menu.main.aimbot.dmg_ov.get( ) : m_settings.minimal_damage.get( ) ), target.m_player_health );
 	input.m_can_pen = m_settings.penetrate.get( );
@@ -920,8 +920,14 @@ void Aimbot::Think( )
 
 	math::VectorAngles( m_best_target.m_point - g_cl.m_shoot_pos, m_aim_angle );
 
-	if ( !CheckHitchance( m_best_target, m_aim_angle ) )
-		return;
+	if (g_menu.main.config.testing_list.get(0)) {
+		if ( !CheckHitchance( m_best_target, m_aim_angle ) )
+			return;
+	}
+	//else {
+	//	if (!OGCheckHitchance(m_player, m_aim_angle))
+	//		return;
+	//}
 
 	if ( g_menu.main.antiaim.enable.get( ) && g_menu.main.antiaim.fake_yaw.get( ) && !g_cl.m_lag )
 		return;
@@ -1124,100 +1130,147 @@ void Aimbot::CreatePoints( std::vector< pt_data_t >& points, const int& index, L
 		points.emplace_back( point, record, index );
 }
 
-bool Aimbot::CheckHitchance( const pt_data_t& target, const ang_t& angle )
+bool Aimbot::OGCheckHitchance(Player* player, const ang_t& angle) {
+	constexpr float HITCHANCE_MAX = 100.f;
+	int   SEED_MAX = g_menu.main.config.seedchance.get();
+
+	vec3_t     start{ g_cl.m_shoot_pos }, end, fwd, right, up, dir, wep_spread;
+	float      inaccuracy, spread;
+	CGameTrace tr;
+	size_t     total_hits{ }, needed_hits{ (size_t)std::ceil((m_settings.hitchance_amount.get() * SEED_MAX) / HITCHANCE_MAX) };
+
+	// get needed directional vectors.
+	math::AngleVectors(angle, &fwd, &right, &up);
+
+	// store off inaccuracy / spread ( these functions are quite intensive and we only need them once ).
+	inaccuracy = g_cl.m_weapon->GetInaccuracy();
+	spread = g_cl.m_weapon->GetSpread();
+
+	// iterate all possible seeds.
+	for (int i{ }; i <= SEED_MAX; ++i) {
+		//g_notify.add(tfm::format(XOR("oldchance seeds \n ")));
+		// get spread.
+		wep_spread = g_cl.m_weapon->CalculateSpread(i, inaccuracy, spread);
+
+		// get spread direction.
+		dir = (fwd + (right * wep_spread.x) + (up * wep_spread.y)).normalized();
+
+		// get end of trace.
+		end = start + (dir * g_cl.m_weapon_info->m_range);
+
+		// setup ray and trace.
+		g_csgo.m_engine_trace->ClipRayToEntity(Ray(start, end), MASK_SHOT, player, &tr);
+
+		// check if we hit a valid player / hitgroup on the player and increment total hits.
+		if (tr.m_entity == player && game::IsValidHitgroup(tr.m_hitgroup))
+			++total_hits;
+
+		// we made it.
+		if (total_hits >= needed_hits)
+			return true;
+
+		// we cant make it anymore.
+		if ((SEED_MAX - i + total_hits) < needed_hits)
+			return false;
+	}
+
+	return false;
+}
+
+bool Aimbot::CheckHitchance(const pt_data_t& target, const ang_t& angle)
 {
-	if ( !target.m_record )
+	if (!target.m_record)
 		return false;
 
-	if ( !m_settings.hitchance_amount.get( ) )
+	if (!m_settings.hitchance_amount.get())
 		return true;
 
 	constexpr int MAX_SEEDS = 238;
-	const int ACCURACY_SEEDS = static_cast< int >( MAX_SEEDS * ( m_settings.accuracy_boost.get( ) / 100.f ) );
+	const int ACCURACY_SEEDS = static_cast<int>(MAX_SEEDS * (m_settings.accuracy_boost.get() / 100.f));
 
 	static vec3_t     fwd, right, up;
 	size_t	   total_hits{ };
 
 	// get needed directional vectors.
-	math::AngleVectors( angle, &fwd, &right, &up );
+	math::AngleVectors(angle, &fwd, &right, &up);
 
-	const float& inaccuracy = g_cl.m_weapon->GetInaccuracy( );
-	const float& spread = g_cl.m_weapon->GetSpread( );
+	const float& inaccuracy = g_cl.m_weapon->GetInaccuracy();
+	const float& spread = g_cl.m_weapon->GetSpread();
 
-	const int& health = target.m_record->m_player->m_iHealth( );
+	const int& health = target.m_record->m_player->m_iHealth();
 
 	static penetration::PenetrationInput_t input;
 	static penetration::PenetrationOutput_t output;
 
 	// init our seeds.
-	if ( m_seed_table.empty( ) )
+	if (m_seed_table.empty())
 	{
-		for ( int i = 0; i < MAX_SEEDS; i++ )
+		for (int i = 0; i < MAX_SEEDS; i++)
 		{
-			g_csgo.RandomSeed( i );
+			g_csgo.RandomSeed(i);
 
-			hc_seed_t& seed = m_seed_table.emplace_front( );
+			hc_seed_t& seed = m_seed_table.emplace_front();
 
-			seed.radius_curve_tens0 = g_csgo.RandomFloat( 0.f, 1.0f );
-			seed.theta0 = g_csgo.RandomFloat( 0.0f, math::pi_2 );
-			seed.radius_curve_tens1 = g_csgo.RandomFloat( 0.f, 1.0f );
-			seed.theta1 = g_csgo.RandomFloat( 0.0f, math::pi_2 );
+			seed.radius_curve_tens0 = g_csgo.RandomFloat(0.f, 1.0f);
+			seed.theta0 = g_csgo.RandomFloat(0.0f, math::pi_2);
+			seed.radius_curve_tens1 = g_csgo.RandomFloat(0.f, 1.0f);
+			seed.theta1 = g_csgo.RandomFloat(0.0f, math::pi_2);
 		}
 	}
 
 	// iterate all possible seeds.
-	for ( int i = 0; i < MAX_SEEDS; i++ )
+	for (int i = 0; i < MAX_SEEDS; i++)
 	{
-		const hc_seed_t& seed = m_seed_table[ i ];
+		const hc_seed_t& seed = m_seed_table[i];
 
 		const float& radius_curve_density = seed.radius_curve_tens0;
 		const float& theta0 = seed.theta0;
 
 		const float radius0 = radius_curve_density * inaccuracy;
-		const float x0 = radius0 * cosf( theta0 );
-		const float y0 = radius0 * sinf( theta0 );
+		const float x0 = radius0 * cosf(theta0);
+		const float y0 = radius0 * sinf(theta0);
 
 		const float& spread_curve_density = seed.radius_curve_tens1;
 		const float& theta1 = seed.theta1;
 
 		const float radius1 = spread_curve_density * spread;
-		const float x1 = radius1 * cosf( theta1 );
-		const float y1 = radius1 * sinf( theta1 );
+		const float x1 = radius1 * cosf(theta1);
+		const float y1 = radius1 * sinf(theta1);
 
 		const float spread_x = x0 + x1;
 		const float spread_y = y0 + y1;
 
 		// get spread direction
-		vec3_t dir = ( fwd + ( right * spread_x ) + ( up * spread_y ) ).normalized( );
+		vec3_t dir = (fwd + (right * spread_x) + (up * spread_y)).normalized();
 
 		// get trace end point
-		const vec3_t& end = g_cl.m_shoot_pos + ( dir * g_cl.m_weapon_info->m_range );
+		const vec3_t& end = g_cl.m_shoot_pos + (dir * g_cl.m_weapon_info->m_range);
 
 		// account for damage accuracy(accuracy boost) for X seeds.
-		if ( i <= ACCURACY_SEEDS &&
-			!math::RayIntersectHitbox( target.m_record->m_player,
+		if (i <= ACCURACY_SEEDS &&
+			!math::RayIntersectHitbox(target.m_record->m_player,
 				g_cl.m_shoot_pos,
 				end,
 				target.m_record->m_bones,
 				target.m_hitbox,
-				false ) )
+				false))
 			continue;
 
 		input.m_from = g_cl.m_local;
 		input.m_target = target.m_record->m_player;
-		input.m_start = g_cl.m_shoot_pos;
+		input.start = g_cl.m_shoot_pos;
 		input.m_pos = end;
 		input.m_damage = input.m_damage_pen = 1;
 		input.m_can_pen = g_cl.m_weapon_id != ZEUS;
 
 		// scan point damage.
-		if ( !penetration::run( &input, &output ) ) // damage accuracy check failed.
+		if (!penetration::run(&input, &output)) // damage accuracy check failed.
 			continue;
 
 		++total_hits;
 
 		// reached enough hitchance, stop iterating for optimization.
-		if ( ( static_cast< float >( total_hits ) / static_cast< float >( MAX_SEEDS ) ) >= m_settings.hitchance_amount.get( ) * 0.01f )
+		if ((static_cast<float>(total_hits) / static_cast<float>(MAX_SEEDS)) >= m_settings.hitchance_amount.get() * 0.01f)
 			return true;
 	}
 

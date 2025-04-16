@@ -183,6 +183,7 @@ bool CSGO::init( ) {
 	LastBoneSetupTime = InvalidateBoneCache.add( 0x11 ).to< size_t >( );
 	MostRecentModelBoneCounter = InvalidateBoneCache.add( 0x1B ).to< size_t >( );
 	LookupBone = pattern::find( g_csgo.m_client_dll, "55 8B EC 53 56 8B F1 57 83 BE ?? ?? ?? ?? ?? 75 14" );
+	GetBonePosition = pattern::find(m_client_dll, XOR("55 8B EC 83 E4 F8 83 EC 30 8D 04 24")).as<getbonepos_t>();
 
 	// exported functions.
 	RandomSeed = PE::GetExport( m_vstdlib_dll, HASH( "RandomSeed" ) ).as< RandomSeed_t >( );

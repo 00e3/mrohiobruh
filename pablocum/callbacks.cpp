@@ -435,6 +435,14 @@ bool callbacks::IsConfig1( ) {
 	return g_menu.main.config.config.get( ) == 0;
 }
 
+bool callbacks::IsTesting() {
+	return g_menu.main.config.testing.get();
+}
+
+bool callbacks::IsTestingHitchance() {
+	return g_menu.main.config.testing_list.get(1);
+}
+
 bool callbacks::IsConfig2( ) {
 	return g_menu.main.config.config.get( ) == 1;
 }

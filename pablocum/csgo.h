@@ -71,6 +71,7 @@ public:
 	using ClearNotices_t = void(__thiscall*)(KillFeed_t*);
 	using AddListenerEntity_t = void(__stdcall*)(IEntityListener*);
 	using GetShotgunSpread_t = void(__stdcall*)(int, int, int, float*, float*);
+	using getbonepos_t = void(__thiscall*)(void*, int, vec3_t&, vec3_t&);
 
 public:
 	bool m_done;
@@ -226,6 +227,7 @@ public:
 
 	int* m_nPredictionRandomSeed;
 	Player* m_pPredictionPlayer;
+	getbonepos_t			 GetBonePosition;
 
 public:
 	std::vector<UserData> m_users;

@@ -248,7 +248,7 @@ void Shots::OnImpact( IGameEvent* evt ) {
 
 		input.m_from = g_cl.m_local;
 		input.m_target = current->m_record.m_player;
-		input.m_start = start;
+		input.start = start;
 		input.m_pos = extrapolated;
 		input.m_damage = input.m_damage_pen = 1;
 		input.m_can_pen = true;

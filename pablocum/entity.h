@@ -1940,6 +1940,7 @@ class CCSGOPlayerAnimState
 public:
 	int* m_layer_order_preset = nullptr;
 	bool					m_first_run_since_init = false;
+	bool    m_land;             // 0x0109
 
 	bool					m_first_foot_plant_since_init = false;
 	int						m_last_update_tick = 0;
@@ -3168,30 +3169,71 @@ public:
 		return g_csgo.LookupBone.as<int( __thiscall* )( void*, const char* )>( )( this, name );
 	}
 
-	__forceinline void ModifyEyePosition( BoneArray* matrix, rebuilt_animstate_t* state, vec3_t& pos )
-	{
-		if ( !state )
+	__forceinline void GetBonePosition(int boneid, vec3_t& output, vec3_t& rotation) {
+		//using getbonepos_t = void(__thiscall*)(void*, int, vec3_t&, vec3_t&);
+	//	((getbonepos_t)g_hooks.getboneposfnc)(this, boneid, output, rotation);
+		g_csgo.GetBonePosition(this, boneid, output, rotation);
+	}
+
+	__forceinline void ModifyEyePosition(CCSGOPlayerAnimState* state, vec3_t* pos) {
+		if (!state) {
 			return;
-
-		if ( !state->m_landing && state->m_duck_amount == 0 )
-			return;
-
-		const int& bone = LookupBone( "head_0" );
-		if ( bone == -1 )
-			return;
-
-		vec3_t head_pos = matrix[ bone ].GetOrigin( );
-		head_pos.z += 1.7f;
-
-		if ( head_pos.z < pos.z )
-		{
-			const float& flLerp = math::RemapValClamped( abs( pos.z - head_pos.z ),
-				4.0f,
-				10.0f,
-				0.0f, 1.0f );
-
-			pos.z = math::Lerp( flLerp, pos.z, head_pos.z );
 		}
+
+		//  if ( *(this + 0x50) && (*(this + 0x100) || *(this + 0x94) != 0.0 || !sub_102C9480(*(this + 0x50))) )
+		if (state->m_player &&
+			(state->m_landing || state->m_player->m_flDuckAmount() != 0.f || !state->m_player->GetGroundEntity())) {
+			vec3_t boneposout, rotation;
+			state->m_player->GetBonePosition(state->m_player->LookupBone("head_0"), boneposout, rotation);
+
+			boneposout.z += 1.7f;
+
+			if ((*pos).z > boneposout.z)
+			{
+				float some_factor = 0.f;
+
+				float delta = (*pos).z - boneposout.z;
+
+				float some_offset = (delta - 4.f) / 6.f;
+				if (some_offset >= 0.f)
+					some_factor = std::fminf(some_offset, 1.f);
+
+				(*pos).z += ((boneposout.z - (*pos).z) * (((some_factor * some_factor) * 3.f) - (((some_factor * some_factor) * 2.f) * some_factor)));
+			}
+		}
+	}
+
+	__forceinline vec3_t GetShootPosition() {
+		/*
+		float *__thiscall sub_103A4A60(_DWORD *this, float *a2)
+		{
+			int v2; // edi
+			_DWORD *v3; // ecx
+
+			v2 = this;
+			(*(*this + 652))(a2);
+			if ( *(v2 + 0x39E1) )
+			{
+				v3 = *(v2 + 0x3874);
+				if ( v3 )
+					sub_103B4130(v3, a2);
+				}
+				return a2;
+			}
+		*/
+
+		vec3_t pos;
+
+		GetEyePos(&pos);
+
+		if (*reinterpret_cast <int32_t*> (uintptr_t(this) + 0x39E1)) {
+			auto v3 = m_PlayerAnimState();
+			if (v3) {
+				ModifyEyePosition(v3, &pos);
+			}
+		}
+
+		return pos;
 	}
 
 	vec3_t GetHitboxCenter( int hitbox, BoneArray* matrix )

@@ -304,6 +304,7 @@ void Client::DoMove( ) {
 
 	// store stuff after input pred.
 	UpdateShootPosition( );
+	m_shoot_pos = m_local->GetShootPosition();
 
 	if ( !m_lag ) {
 		g_hvh.m_old_desync = g_hvh.m_desync;
@@ -540,7 +541,7 @@ void Client::UpdateShootPosition( ) {
 
 	m_local->GetEyePos( &m_shoot_pos );
 
-	m_local->ModifyEyePosition( m_shot_bones, &data, m_shoot_pos );
+	//m_local->ModifyEyePosition( m_shot_bones, &data, m_shoot_pos );
 
 	m_local->SetPoseParameters( backup_poses );
 	m_local->SetAnimLayers( backup_layers );

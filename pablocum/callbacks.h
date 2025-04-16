@@ -16,8 +16,10 @@ namespace callbacks {
 	bool IsBelowHunauto();
 	bool IsGeneral( );
 	bool IsAuto( );
+	bool IsTestingHitchance();
 	bool IsAwp( );
 	bool IsScout( );
+	bool IsTesting();
 	bool IsHPistol( );
 	void WhitelistRemove();
 	void WhitelistClear();

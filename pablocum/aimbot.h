@@ -110,6 +110,7 @@ public:
 	bool m_force_body;
 
 	std::array< AimPlayer, 64 > m_players;
+	std::vector< AimPlayer* >   m_targets;
 
 	BackupRecord m_backup[ 64 ];
 
@@ -244,6 +245,8 @@ public:
 	void Think( );
 	void StripAttack( );
 	bool CheckHitchance( const pt_data_t& target, const ang_t& angle );
+	bool OGCheckHitchance(Player* player, const ang_t& angle);
+
 };
 
 extern Aimbot g_aimbot;
